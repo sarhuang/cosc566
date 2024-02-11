@@ -177,8 +177,12 @@ NOTES:
  *   Rating: 1
  */
 int bitAnd(int x, int y) {
-  return 2;
+  //Outside NOT negates the inner NOTs and leaves AND
+  int z = ~(~x | ~y);
+  return z;
 }
+
+
 /* 
  * bitNor - ~(x|y) using only ~ and & 
  *   Example: bitNor(0x6, 0x5) = 0xFFFFFFF8
@@ -187,8 +191,12 @@ int bitAnd(int x, int y) {
  *   Rating: 1
  */
 int bitNor(int x, int y) {
-  return 2;
+  //The AND operation of two NOTs is equivalent to NOR
+  int z = (~x) & (~y);
+  return z;
 }
+
+
 /* 
  * copyLSB - set all bits of result to least significant bit of x
  *   Example: copyLSB(5) = 0xFFFFFFFF, copyLSB(6) = 0x00000000
@@ -197,8 +205,12 @@ int bitNor(int x, int y) {
  *   Rating: 2
  */
 int copyLSB(int x) {
-  return 2;
+  //Integers are 32 bits so it shifts the least significant bit to the most sig bit and then shifts bit all to the right
+  int y = (x << 31) >> 31;
+  return y;
 }
+
+
 /* 
  * evenBits - return word with all even-numbered bits set to 1
  *   Legal ops: ! ~ & ^ | + << >>
@@ -206,8 +218,14 @@ int copyLSB(int x) {
  *   Rating: 1
  */
 int evenBits(void) {
-  return 2;
+  //Use 01010101 and left shift the bits to cover the even-numbered bits 
+  int mask = 0x55;  
+  mask |= mask << 8;
+  mask |= mask << 16;
+  return mask;
 }
+
+
 /* 
  * logicalShift - shift x to the right by n, using a logical shift
  *   Can assume that 0 <= n <= 31
@@ -217,8 +235,12 @@ int evenBits(void) {
  *   Rating: 3 
  */
 int logicalShift(int x, int n) {
-  return 2;
+  //Perform logical right shift by making a mask where all bits are 1s except for the least sig bit (0)
+  int mask = ~(1 << 31 >> n << 1);
+  return mask & (x >> n);
 }
+
+
 /* 
  * bang - Compute !x without using !
  *   Examples: bang(3) = 0, bang(0) = 1
@@ -227,8 +249,14 @@ int logicalShift(int x, int n) {
  *   Rating: 4 
  */
 int bang(int x) {
-  return 2;
+  //The OR operation for x and -x will either result in 0 or a number with most sig bit set and then shift so all bits are 0 or 1
+  //The +1 is the reverse the effect
+  int negativeX = ~x + 1; 
+  int y = ((x | negativeX) >> 31) + 1;
+  return y;
 }
+
+
 /* 
  * leastBitPos - return a mask that marks the position of the
  *               least significant 1 bit. If x == 0, return 0
@@ -238,8 +266,12 @@ int bang(int x) {
  *   Rating: 2 
  */
 int leastBitPos(int x) {
-  return 2;
+  //The x is inversed and the AND oepration retains only the least sig bit x and everything else 0
+  int negativeX = ~x + 1;
+  return x & negativeX;
 }
+
+
 /* 
  * isNotEqual - return 0 if x == y, and 1 otherwise 
  *   Examples: isNotEqual(5,5) = 0, isNotEqual(4,5) = 1
@@ -248,8 +280,12 @@ int leastBitPos(int x) {
  *   Rating: 2
  */
 int isNotEqual(int x, int y) {
-  return 2;
+  //XOR and NOT will return 1 if they're equal and 0 if not. The extra NOT will swap and return 0 if equal
+  int z = !!(x ^ y);
+  return z;
 }
+
+
 /* 
  * negate - return -x 
  *   Example: negate(1) = -1.
@@ -258,8 +294,11 @@ int isNotEqual(int x, int y) {
  *   Rating: 2
  */
 int negate(int x) {
-  return 2;
+  int negativeX = ~x + 1;
+  return negativeX;
 }
+
+
 /* 
  * isPositive - return 1 if x > 0, return 0 otherwise 
  *   Example: isPositive(-1) = 0.
@@ -268,8 +307,12 @@ int negate(int x) {
  *   Rating: 2
  */
 int isPositive(int x) {
-  return 2;
+  //If x is 0, sign bit with will ORed to 1. Non-zero will be ORed to itself. The NOT inverses the effect so it returns 1 if not 0
+  int signedBit = x >> 31;
+  return !(signedBit | !x);
 }
+
+
 /* 
  * isNonNegative - return 1 if x >= 0, return 0 otherwise 
  *   Example: isNonNegative(-1) = 0.  isNonNegative(0) = 1.
@@ -278,8 +321,12 @@ int isPositive(int x) {
  *   Rating: 2
  */
 int isNonNegative(int x) {
-  return 2;
+  //Sign bit will be 0 if x is non-negative, and 1s if negative. The NOT inverses it so it returns 1 for positives
+  int signedBit = x >> 31;
+  return !(signedBit & 1);
 }
+
+
 /* 
  * isAsciiDigit - return 1 if 0x30 <= x <= 0x39 (ASCII codes for characters '0' to '9')
  *   Example: isAsciiDigit(0x35) = 1.
@@ -290,8 +337,15 @@ int isNonNegative(int x) {
  *   Rating: 3
  */
 int isAsciiDigit(int x) {
-  return 2;
+  //Checks if x is between lower and upper bound, less than lower, or greater than upper and then returns 1 or 0
+  int lowerBound = 0x30; //ASCII code for '0'
+  int upperBound = 0x39; //ASCII code for '9'
+  int differenceLowerBound = x + (~lowerBound + 1);
+  int differenceUpperBound = upperBound + (~lowerBound + 1);
+  return !((differenceLowerBound >> 31) & 1) & !((differenceUpperBound + (~differenceLowerBound + 1)) >> 31);
 }
+
+
 /* 
  * addOK - Determine if can compute x+y without overflow
  *   Example: addOK(0x80000000,0x80000000) = 0,
@@ -301,8 +355,13 @@ int isAsciiDigit(int x) {
  *   Rating: 3
  */
 int addOK(int x, int y) {
-  return 2;
+  //Adds the params and check for overflow by XORing and seeing if the sign bits of the sum differ from the sign bits of x and y
+  int sum = x + y;
+  int overflow = ((sum ^ x) & (sum ^ y)) >> 31;
+  return !overflow;
 }
+
+
 /* 
  * absVal - absolute value of x
  *   Example: absVal(-1) = 1.
@@ -312,8 +371,13 @@ int addOK(int x, int y) {
  *   Rating: 4
  */
 int absVal(int x) {
-  return 2;
+  //Compute the absolute value with adding and XORing the signed bit (non-negative=0, negative=1)
+  int signedBit = x >> 31;
+  int y = (x + signedBit) ^ signedBit;
+  return y;
 }
+
+
 /* 
  * isNonZero - Check whether x is nonzero using
  *              the legal operators except !
@@ -323,8 +387,13 @@ int absVal(int x) {
  *   Rating: 4 
  */
 int isNonZero(int x) {
-  return 2;
+  //Sets all bits to 1 if x has a bit set to 1, least sig bit will contain 1 (negative) or 0 (non-negative), and extracts the least sig bit
+  int negativeX = ~x + 1;
+  int y = ((x | negativeX) >> 31) & 1;  
+  return y;
 }
+
+
 /* 
  * byteSwap - swaps the nth byte and the mth byte
  *  Examples: byteSwap(0x12345678, 1, 3) = 0x56341278
@@ -335,8 +404,17 @@ int isNonZero(int x) {
  *  Rating: 2
  */
 int byteSwap(int x, int n, int m) {
-    return 2;
+  //Swap only the selected bytes by extracting them with right shifts and masking and then XORing
+  int shift_n = n << 3;
+  int shift_m = m << 3;
+  int leastSigByte_n = (x >> shift_n) & 0xFF;
+  int leastSigByte_m = (x >> shift_m) & 0xFF;
+  int mask = ((leastSigByte_n ^ leastSigByte_m) << shift_n) | ((leastSigByte_n ^ leastSigByte_m) << shift_m);
+  return x ^ mask;
 }
+
+
+
 /* 
  * bitMask - Generate a mask consisting of all 1's 
  *   lowbit and highbit
@@ -348,5 +426,15 @@ int byteSwap(int x, int n, int m) {
  *   Rating: 3
  */
 int bitMask(int highbit, int lowbit) {
-  return 2;
+  //Make two masks and does XOR to fill the 1s where the masks differ and then sets all bits that aren't in range to 0
+  int lowHalf = ~0 << lowbit;
+  int highHalf = (~0 << highbit) << 1;
+  return (highHalf ^ lowHalf) & lowHalf;
 }
+
+
+
+
+
+
+
